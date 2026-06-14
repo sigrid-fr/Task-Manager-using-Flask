@@ -93,43 +93,44 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-       
-      - name: Cache NVD Database 
-        uses: actions/cache@v4 
-        with: 
-            path: ${{ github.workspace }}/odc-data 
-            key: ${{ runner.os }}-odc-data-v1 
-            restore-keys: | 
-                ${{ runner.os }}-odc-data-v1
+
+      - name: Cache NVD Database
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/odc-data
+          key: ${{ runner.os }}-odc-data-v1
+          restore-keys: |
+            ${{ runner.os }}-odc-data-v1
 
       - name: Run Dependency-Check in Docker
-        env: 
-            NVD_API_KEY: ${{ secrets.NVD_API_KEY }} 
-        run: |  
-            mkdir -p "${{ github.workspace }}/odc-data"     
-            mkdir -p "${{ github.workspace }}/odc-reports"  
-            
-            chmod -R 777 "${{ github.workspace }}/odc-data" 
-            chmod -R 777 "${{ github.workspace }}/odc-reports" 
-            
-            rm -f "${{ github.workspace }}/odc-data"/*.lock 
-            rm -f "${{ github.workspace }}/odc-data"/*.lck 
-            
-            docker run --rm \ 
-                -v "${{ github.workspace }}:/src" \ 
-                -v "${{ github.workspace }}/odc-data:/usr/share/dependency-check/data" \ 
-                -v "${{ github.workspace }}/odc-reports:/reports" \ 
-                owasp/dependency-check:12.1.3 \ 
-                --nvdApiKey "${NVD_API_KEY}" \ 
-                --project "task-manager-using-flask" \ 
-                --scan /src \ --out /reports \ 
-                --format HTML 
-      
-      - name: Verify generated reports 
-        if: always() 
-        run: | 
-            echo "Conteúdo de odc-reports:"
-            ls -la odc-reports || true
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+        run: |
+          mkdir -p "${{ github.workspace }}/odc-data"
+          mkdir -p "${{ github.workspace }}/odc-reports"
+
+          chmod -R 777 "${{ github.workspace }}/odc-data"
+          chmod -R 777 "${{ github.workspace }}/odc-reports"
+
+          rm -f "${{ github.workspace }}/odc-data"/*.lock
+          rm -f "${{ github.workspace }}/odc-data"/*.lck
+
+          docker run --rm \
+            -v "${{ github.workspace }}:/src" \
+            -v "${{ github.workspace }}/odc-data:/usr/share/dependency-check/data" \
+            -v "${{ github.workspace }}/odc-reports:/reports" \
+            owasp/dependency-check:latest \
+            --nvdApiKey "${NVD_API_KEY}" \
+            --project "task-manager-using-flask" \
+            --scan /src \
+            --out /reports \
+            --format HTML
+
+      - name: Verify generated reports
+        if: always()
+        run: |
+          echo "Conteúdo de odc-reports:"
+          ls -la odc-reports || true
 
       - name: Upload Dependency-Check reports
         if: always()
