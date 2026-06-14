@@ -51,4 +51,7 @@ def auth_client(client, make_user):
 
 def pytest_unconfigure(config):
     if os.path.exists(_db_path):
-        os.remove(_db_path)
+        try:
+            os.remove(_db_path)
+        except PermissionError:
+            print(f"Não foi possível remover {_db_path}")
