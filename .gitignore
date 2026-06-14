@@ -12,8 +12,9 @@ tasks/
 .worktrees/
 
 # Local-only dev tooling (não versionado)
-docker-compose.yml
 bandit-report.*
+dependency-check-report.*
+zap-report.*
 
 # Distribution / packaging
 .Python
