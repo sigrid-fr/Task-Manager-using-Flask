@@ -101,6 +101,7 @@ jobs:
             -v "$PWD:/src" \
             -v "$PWD/${REPORT_DIR}/dependency-check:/report" \
             owasp/dependency-check:latest \
+            --nvdApiKey ${{ secrets.NVD_API_KEY }} \
             --project "Task Manager Flask" \
             --scan /src \
             --out /report \
