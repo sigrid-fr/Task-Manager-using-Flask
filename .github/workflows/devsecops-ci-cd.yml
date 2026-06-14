@@ -84,7 +84,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: bandit-reports
-          path: ${{ env.REPORT_DIR }}/bandit
+          path: odc-reports/bandit
 
   dependency-check:
     name: OWASP Dependency-Check
