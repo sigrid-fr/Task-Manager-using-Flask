@@ -204,6 +204,7 @@ jobs:
             -v "$PWD:/zap/wrk" \
             ghcr.io/zaproxy/zaproxy:stable \
             zap-baseline.py \
+            -I \
             -t http://task-manager-app:5000 \
             -c /zap/wrk/zap-baseline.conf \
             -r "odc-reports/zap/zap-baseline.html" \
