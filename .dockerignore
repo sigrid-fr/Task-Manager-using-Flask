@@ -1,0 +1,13 @@
+.git
+.github
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+security-reports/
+instance/
+*.db
+venv/
+.venv/
+outputs/
