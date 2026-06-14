@@ -100,7 +100,7 @@ jobs:
           docker run --rm \
             -v "$PWD:/src" \
             -v "$PWD/${REPORT_DIR}/dependency-check:/report" \
-            owasp/dependency-check:latest \
+            owasp/dependency-check:12.1.3 \
             --nvdApiKey ${{ secrets.NVD_API_KEY }} \
             --project "Task Manager Flask" \
             --scan /src \
