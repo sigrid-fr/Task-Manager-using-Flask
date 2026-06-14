@@ -5,12 +5,14 @@ on:
     branches:
       - main
       - develop
+      - release/homologacao
       - 'feature/**'
       - 'bugfix/**'
       - 'hotfix/**'
   pull_request:
     branches:
       - main
+      - release/homologacao
       - develop
   workflow_dispatch:
 
