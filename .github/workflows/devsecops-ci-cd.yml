@@ -198,7 +198,8 @@ jobs:
 
       - name: Run ZAP baseline scan
         run: |
-          mkdir -p "odc-reports/zap"
+          mkdir -p "$PWD/odc-reports/zap"
+          chmod -R 777 "$PWD/odc-reports"
           docker run --rm --network task-manager-sec \
             -v "$PWD:/zap/wrk" \
             ghcr.io/zaproxy/zaproxy:stable \
@@ -213,7 +214,12 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: zap-reports
-          path: ${{ env.REPORT_DIR }}/zap
+          path: odc-reports/zap
+
+      - name: Verify ZAP reports
+        if: always()
+        run: |
+          ls -la odc-reports/zap || true
 
       - name: Stop application
         if: always()
