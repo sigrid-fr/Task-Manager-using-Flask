@@ -74,11 +74,11 @@ jobs:
 
       - name: Run Bandit
         run: |
-          mkdir -p "${REPORT_DIR}/bandit"
+          mkdir -p "odc-reports/bandit"
           bandit -r todo_project/todo_project -x todo_project/tests -ll -ii \
-            -f json -o "${REPORT_DIR}/bandit/bandit.json"
+            -f json -o "odc-reports/bandit/bandit.json"
           bandit -r todo_project/todo_project -x todo_project/tests -ll -ii \
-            -f txt -o "${REPORT_DIR}/bandit/bandit.txt"
+            -f txt -o "odc-reports/bandit/bandit.txt"
 
       - name: Upload Bandit reports
         uses: actions/upload-artifact@v4
@@ -93,28 +93,50 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+       
+      - name: Cache NVD Database 
+        uses: actions/cache@v4 
+        with: 
+            path: ${{ github.workspace }}/odc-data 
+            key: ${{ runner.os }}-odc-data-v1 
+            restore-keys: | 
+                ${{ runner.os }}-odc-data-v1
 
       - name: Run Dependency-Check in Docker
-        run: |
-          mkdir -p "${REPORT_DIR}/dependency-check"
-          docker run --rm \
-            -v "$PWD:/src" \
-            -v "$PWD/${REPORT_DIR}/dependency-check:/report" \
-            owasp/dependency-check:latest \
-            --nvdApiKey ${{ secrets.NVD_API_KEY }} \
-            --project "Task Manager Flask" \
-            --scan /src \
-            --out /report \
-            --format HTML \
-            #--format JSON \
-            #--failOnCVSS 7
+        env: 
+            NVD_API_KEY: ${{ secrets.NVD_API_KEY }} 
+        run: |  
+            mkdir -p "${{ github.workspace }}/odc-data"     
+            mkdir -p "${{ github.workspace }}/odc-reports"  
+            
+            chmod -R 777 "${{ github.workspace }}/odc-data" 
+            chmod -R 777 "${{ github.workspace }}/odc-reports" 
+            
+            rm -f "${{ github.workspace }}/odc-data"/*.lock 
+            rm -f "${{ github.workspace }}/odc-data"/*.lck 
+            
+            docker run --rm \ 
+                -v "${{ github.workspace }}:/src" \ 
+                -v "${{ github.workspace }}/odc-data:/usr/share/dependency-check/data" \ 
+                -v "${{ github.workspace }}/odc-reports:/reports" \ 
+                owasp/dependency-check:12.1.3 \ 
+                --nvdApiKey "${NVD_API_KEY}" \ 
+                --project "task-manager-using-flask" \ 
+                --scan /src \ --out /reports \ 
+                --format HTML 
+      
+      - name: Verify generated reports 
+        if: always() 
+        run: | 
+            echo "Conteúdo de odc-reports:"
+            ls -la odc-reports || true
 
       - name: Upload Dependency-Check reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: dependency-check-reports
-          path: ${{ env.REPORT_DIR }}/dependency-check
+          path: odc-reports
 
   build-image:
     name: Build Docker image
@@ -175,15 +197,15 @@ jobs:
 
       - name: Run ZAP baseline scan
         run: |
-          mkdir -p "${REPORT_DIR}/zap"
+          mkdir -p "odc-reports/zap"
           docker run --rm --network task-manager-sec \
             -v "$PWD:/zap/wrk" \
             ghcr.io/zaproxy/zaproxy:stable \
             zap-baseline.py \
             -t http://task-manager-app:5000 \
             -c /zap/wrk/zap-baseline.conf \
-            -r "${REPORT_DIR}/zap/zap-baseline.html" \
-            -J "${REPORT_DIR}/zap/zap-baseline.json"
+            -r "odc-reports/zap/zap-baseline.html" \
+            -J "odc-reports/zap/zap-baseline.json"
 
       - name: Upload ZAP reports
         if: always()
